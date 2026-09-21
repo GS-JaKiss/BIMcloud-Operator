@@ -1,0 +1,77 @@
+{
+  "name": "bimcloud-operator",
+  "productName": "BIMcloud Operator",
+  "version": "1.7.0",
+  "description": "Build, run, clean, and configure BIMcloud applications from a development branch.",
+  "main": "dist/main/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && npm run build:main && npm run build:renderer",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "vite build",
+    "dist:win": "npm run build && electron-builder --win",
+    "build-release": "npm version minor --no-git-tag-version && npm run dist:win",
+    "start": "npm run build && electron .",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test dist-test/test/config-service.test.js",
+    "check": "tsc -p tsconfig.main.json --noEmit && tsc -p src/renderer/tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "test:electron": "npm run build && tsc -p tsconfig.test.json && node dist-test/test/electron-smoke.js"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "electron": "43.2.0",
+    "electron-builder": "^26.15.3",
+    "playwright-core": "1.55.1",
+    "typescript": "5.9.3",
+    "vite": "^8.1.5"
+  },
+  "dependencies": {
+    "@fontsource/dm-sans": "5.2.6",
+    "@fontsource/manrope": "5.2.6",
+    "@xmldom/xmldom": "0.9.10",
+    "lucide-react": "^1.25.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "build": {
+    "appId": "com.graphisoft.bimcloud.operator",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "executableName": "BIMcloud Operator",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-${version}-${arch}-Setup.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-${arch}-Portable.${ext}"
+    }
+  }
+}
