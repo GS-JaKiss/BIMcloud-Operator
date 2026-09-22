@@ -1,7 +1,7 @@
 {
   "name": "bimcloud-operator",
   "productName": "BIMcloud Operator",
-  "version": "1.7.0",
+  "version": "1.10.0",
   "description": "Build, run, clean, and configure BIMcloud applications from a development branch.",
   "main": "dist/main/main.js",
   "type": "commonjs",

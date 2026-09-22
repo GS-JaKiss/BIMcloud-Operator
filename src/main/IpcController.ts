@@ -1,10 +1,11 @@
 import path from 'node:path';
 import { dialog, ipcMain, shell } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { BCBuildCommand, SavePayload } from '../shared/contracts';
+import type { BCBuildCommand, MakeTarget, SavePayload } from '../shared/contracts';
 import { AppStateStore } from './services/AppStateStore';
 import { BCBuildService } from './services/BCBuildService';
 import { BranchConfigService } from './services/BranchConfigService';
+import { MakeService } from './services/MakeService';
 import { WindowManager } from './WindowManager';
 
 export class IpcController {
@@ -12,7 +13,8 @@ export class IpcController {
     private readonly windows: WindowManager,
     private readonly branchService: BranchConfigService,
     private readonly stateStore: AppStateStore,
-    private readonly bcBuildService: BCBuildService
+    private readonly bcBuildService: BCBuildService,
+    private readonly makeService: MakeService
   ) {}
 
   public register(): void {
@@ -85,6 +87,15 @@ export class IpcController {
       'bcbuild:run',
       async (event: IpcMainInvokeEvent, rootPath: string, command: BCBuildCommand) => (
         this.bcBuildService.run(rootPath, command, (output) => {
+          if (!event.sender.isDestroyed()) event.sender.send('bcbuild:output', output);
+        })
+      )
+    );
+
+    ipcMain.handle(
+      'make:run',
+      async (event: IpcMainInvokeEvent, rootPath: string, target: MakeTarget) => (
+        this.makeService.run(rootPath, target, (output) => {
           if (!event.sender.isDestroyed()) event.sender.send('bcbuild:output', output);
         })
       )

@@ -59,13 +59,13 @@ export function BCBuildConsole({
     <section
       className="bcbuild-console"
       id="bcbuild-console"
-      aria-label="BCBuild output"
+      aria-label="Command output"
       style={{ height, flexBasis: height }}
     >
       <div
         className="console-resize-handle"
         role="separator"
-        aria-label="Resize BCBuild output"
+        aria-label="Resize command output"
         aria-orientation="horizontal"
         aria-valuemin={MIN_CONSOLE_HEIGHT}
         aria-valuemax={Math.max(MIN_CONSOLE_HEIGHT, window.innerHeight - VIEWPORT_MARGIN)}
@@ -77,7 +77,7 @@ export function BCBuildConsole({
       <header>
         <div className="bcbuild-console-title">
           <span className={`console-state${running ? ' running' : ''}`} />
-          <strong>BCBuild output</strong>
+          <strong>Command output</strong>
           <span>{running ? 'Running' : 'Finished'}</span>
         </div>
         <div className="console-actions">

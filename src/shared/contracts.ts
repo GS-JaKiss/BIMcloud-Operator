@@ -55,6 +55,8 @@ export const BC_BUILD_COMMANDS = [
   'sbs'
 ] as const;
 export type BCBuildCommand = typeof BC_BUILD_COMMANDS[number];
+export const MAKE_TARGETS = ['ALL', 'TWPortalServer', 'TWServerTools', 'TWClientBase', 'Installer'] as const;
+export type MakeTarget = typeof MAKE_TARGETS[number];
 
 export type ConfigOption = {
   path: string;
@@ -94,6 +96,11 @@ export type BCBuildResult = {
   output: string;
 };
 
+export type MakeResult = {
+  target: MakeTarget;
+  output: string;
+};
+
 export type BCBuildOutput = {
   stream: 'stdout' | 'stderr';
   text: string;
@@ -108,6 +115,7 @@ export type BranchConfigApi = {
   exportConfig(payload: SavePayload): Promise<string | null>;
   importConfig(rootPath: string): Promise<{ filePath: string; overrides: Overrides } | null>;
   runBCBuild(rootPath: string, command: BCBuildCommand): Promise<BCBuildResult>;
+  runMake(rootPath: string, target: MakeTarget): Promise<MakeResult>;
   deleteBinWin(rootPath: string): Promise<boolean>;
   onBCBuildOutput(listener: (output: BCBuildOutput) => void): () => void;
   reveal(targetPath: string): Promise<void>;

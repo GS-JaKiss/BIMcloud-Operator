@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { BCBuildService, BC_BUILD_RELATIVE_PATH } from '../src/main/services/BCBuildService';
+import { MakeService, MAKE_SCRIPT_RELATIVE_PATH } from '../src/main/services/MakeService';
 import {
   BranchConfigService,
   DEVELOPMENT_CONFIG_PATH,
@@ -288,4 +289,24 @@ test('exports and imports a PortalServer XML configuration', async (context) => 
 
   await fs.writeFile(savedConfigPath, '<not-valid');
   await assert.rejects(service.importConfig(savedConfigPath, rootPath), /Invalid XML/);
+});
+
+test('runs MakeWin BUILD with only supported targets from the Control folder', async (context) => {
+  const rootPath = await fs.mkdtemp(path.join(os.tmpdir(), 'make-service-'));
+  context.after(async (): Promise<void> => fs.rm(rootPath, { recursive: true, force: true }));
+  const scriptPath = path.join(rootPath, MAKE_SCRIPT_RELATIVE_PATH);
+  await fs.mkdir(path.dirname(scriptPath));
+  await fs.writeFile(scriptPath, '@echo off');
+  const calls: Array<{ scriptPath: string; target: string; workingDirectory: string }> = [];
+  const service = new MakeService(async (calledScriptPath, target, workingDirectory) => {
+    calls.push({ scriptPath: calledScriptPath, target, workingDirectory });
+    return 'Build completed';
+  });
+
+  assert.deepEqual(await service.run(rootPath, 'TWPortalServer'), {
+    target: 'TWPortalServer',
+    output: 'Build completed'
+  });
+  assert.deepEqual(calls, [{ scriptPath, target: 'TWPortalServer', workingDirectory: path.join(rootPath, 'Control') }]);
+  await assert.rejects(service.run(rootPath, 'Unknown' as never), /Unsupported Make target/);
 });

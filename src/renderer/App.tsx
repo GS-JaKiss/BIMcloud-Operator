@@ -91,6 +91,7 @@ export function App(): React.JSX.Element {
             onDeleteBinWin={() => void editor.deleteBinWin()}
             onReveal={(path) => void editor.reveal(path)}
             onRunBCBuild={(command) => void editor.runBCBuild(command)}
+            onRunMake={(target) => void editor.runMake(target)}
             onToggleOutput={() => editor.setBCBuildOutputVisible(!editor.bcBuildOutputVisible)}
           />
         )}

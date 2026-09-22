@@ -3,6 +3,7 @@ import { IpcController } from './IpcController';
 import { AppStateStore } from './services/AppStateStore';
 import { BCBuildService } from './services/BCBuildService';
 import { BranchConfigService } from './services/BranchConfigService';
+import { MakeService } from './services/MakeService';
 import { WindowManager } from './WindowManager';
 
 const windows = new WindowManager();
@@ -10,7 +11,8 @@ const ipcController = new IpcController(
   windows,
   new BranchConfigService(),
   new AppStateStore(),
-  new BCBuildService()
+  new BCBuildService(),
+  new MakeService()
 );
 nativeTheme.themeSource = 'dark';
 ipcController.register();

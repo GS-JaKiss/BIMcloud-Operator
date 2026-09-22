@@ -5,6 +5,7 @@ import type {
   ConfigOption,
   ConfigValue,
   DiscoveredBranch,
+  MakeTarget,
   Overrides
 } from '../../shared/contracts';
 
@@ -34,6 +35,7 @@ export type BranchEditorState = {
   chooseRoot(): Promise<void>;
   selectBranch(rootPath: string): Promise<void>;
   runBCBuild(command: BCBuildCommand): Promise<boolean>;
+  runMake(target: MakeTarget): Promise<boolean>;
   buildPortal(): Promise<void>;
   refreshBranch(): Promise<void>;
   deleteBinWin(): Promise<void>;
@@ -124,6 +126,34 @@ export function useBranchEditor(): BranchEditorState {
     } catch (error: unknown) {
       setToast({
         title: `BCBuild ${command} failed`,
+        message: getErrorMessage(error),
+        error: true,
+        actionPath: null
+      });
+      return false;
+    } finally {
+      setBCBuildRunning(false);
+    }
+  }
+
+  async function runMake(target: MakeTarget): Promise<boolean> {
+    if (!branch || loadingLabel || bcBuildRunning) return false;
+    setBCBuildOutput(`> MakeWin.bat BUILD ${target}\n`);
+    setBCBuildOutputVisible(true);
+    setBCBuildRunning(true);
+    try {
+      const result = await window.branchConfig.runMake(branch.rootPath, target);
+      const outputLines = result.output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      setToast({
+        title: `Make ${target} completed`,
+        message: outputLines.at(-1) || 'The command completed successfully.',
+        error: false,
+        actionPath: null
+      });
+      return true;
+    } catch (error: unknown) {
+      setToast({
+        title: `Make ${target} failed`,
         message: getErrorMessage(error),
         error: true,
         actionPath: null
@@ -321,6 +351,7 @@ export function useBranchEditor(): BranchEditorState {
     chooseRoot,
     selectBranch,
     runBCBuild,
+    runMake,
     buildPortal,
     refreshBranch,
     deleteBinWin,
