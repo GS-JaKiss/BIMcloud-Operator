@@ -4,6 +4,12 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { BCBuildService, BC_BUILD_RELATIVE_PATH } from '../src/main/services/BCBuildService';
+import {
+  BCProService,
+  BC_PRO_RELATIVE_DIRECTORY,
+  BC_PRO_SCRIPT_NAME,
+  type BCProExecution
+} from '../src/main/services/BCProService';
 import { MakeService, MAKE_SCRIPT_RELATIVE_PATH } from '../src/main/services/MakeService';
 import {
   BranchConfigService,
@@ -309,4 +315,52 @@ test('runs MakeWin BUILD with only supported targets from the Control folder', a
   });
   assert.deepEqual(calls, [{ scriptPath, target: 'TWPortalServer', workingDirectory: path.join(rootPath, 'Control') }]);
   await assert.rejects(service.run(rootPath, 'Unknown' as never), /Unsupported Make target/);
+});
+
+test('runs BCPro commands with manifests and allowed options from the provisioning tool folder', async (context) => {
+  const rootPath = await fs.mkdtemp(path.join(os.tmpdir(), 'bcpro-service-'));
+  context.after(async (): Promise<void> => fs.rm(rootPath, { recursive: true, force: true }));
+  const toolDirectory = path.join(rootPath, BC_PRO_RELATIVE_DIRECTORY);
+  const scriptPath = path.join(toolDirectory, BC_PRO_SCRIPT_NAME);
+  await fs.mkdir(path.join(toolDirectory, 'Features'), { recursive: true });
+  await fs.writeFile(scriptPath, '@echo off');
+  await fs.writeFile(path.join(toolDirectory, 'example.yaml'), 'components: {}');
+  await fs.writeFile(path.join(toolDirectory, 'Features', 'paired.yaml'), 'components: {}');
+  await fs.writeFile(path.join(toolDirectory, 'Features', 'tenDukeDatabase.json'), '{}');
+  const calls: BCProExecution[] = [];
+  const service = new BCProService(async (execution) => {
+    calls.push(execution);
+    return 'Up command finished';
+  });
+
+  assert.deepEqual(await service.listManifests(rootPath), ['example.yaml', path.join('Features', 'paired.yaml')]);
+  assert.deepEqual(await service.run(rootPath, {
+    command: 'up',
+    manifest: path.join('Features', 'paired.yaml'),
+    flags: ['-v', '--detached']
+  }), { command: 'up', output: 'Up command finished' });
+  await service.run(rootPath, { command: 'clean', manifest: 'ignored.yaml', flags: [] });
+  assert.deepEqual(calls, [
+    {
+      scriptPath,
+      args: ['up', path.join('Features', 'paired.yaml'), '--detached', '-v'],
+      workingDirectory: toolDirectory,
+      elevated: false
+    },
+    { scriptPath, args: ['clean'], workingDirectory: toolDirectory, elevated: true }
+  ]);
+  await assert.rejects(
+    service.run(rootPath, { command: 'down', manifest: 'example.yaml', flags: ['--detached'] }),
+    /Unsupported BCPro option/
+  );
+  await assert.rejects(service.run(rootPath, { command: 'up', manifest: null, flags: [] }), /Select a manifest/);
+  await assert.rejects(
+    service.run(rootPath, { command: 'up', manifest: 'missing.yaml', flags: [] }),
+    /manifest was not found/
+  );
+  await assert.rejects(
+    service.run(rootPath, { command: 'up', manifest: 'a&b.yaml', flags: [] }),
+    /unsupported characters/
+  );
+  await assert.rejects(service.run(rootPath, { command: 'nuke' as never, manifest: null, flags: [] }), /Unsupported BCPro command/);
 });

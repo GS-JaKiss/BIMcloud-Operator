@@ -57,6 +57,25 @@ export const BC_BUILD_COMMANDS = [
 export type BCBuildCommand = typeof BC_BUILD_COMMANDS[number];
 export const MAKE_TARGETS = ['ALL', 'TWPortalServer', 'TWServerTools', 'TWClientBase', 'Installer'] as const;
 export type MakeTarget = typeof MAKE_TARGETS[number];
+export const BC_PRO_COMMANDS = ['up', 'start', 'stop', 'down', 'dup', 'reset', 'clean'] as const;
+export type BCProCommand = typeof BC_PRO_COMMANDS[number];
+export const BC_PRO_FLAGS = ['--detached', '--stopped', '--clean', '-v'] as const;
+export type BCProFlag = typeof BC_PRO_FLAGS[number];
+export const BC_PRO_COMMAND_FLAGS: Record<BCProCommand, readonly BCProFlag[]> = {
+  up: ['--detached', '--stopped', '--clean', '-v'],
+  start: ['--detached', '-v'],
+  stop: ['--detached', '-v'],
+  down: ['-v'],
+  dup: ['--detached', '--stopped', '--clean', '-v'],
+  reset: ['--detached', '--stopped', '--clean', '-v'],
+  clean: ['-v']
+};
+
+export type BCProRequest = {
+  command: BCProCommand;
+  manifest: string | null;
+  flags: BCProFlag[];
+};
 
 export type ConfigOption = {
   path: string;
@@ -101,6 +120,11 @@ export type MakeResult = {
   output: string;
 };
 
+export type BCProResult = {
+  command: BCProCommand;
+  output: string;
+};
+
 export type BCBuildOutput = {
   stream: 'stdout' | 'stderr';
   text: string;
@@ -116,6 +140,9 @@ export type BranchConfigApi = {
   importConfig(rootPath: string): Promise<{ filePath: string; overrides: Overrides } | null>;
   runBCBuild(rootPath: string, command: BCBuildCommand): Promise<BCBuildResult>;
   runMake(rootPath: string, target: MakeTarget): Promise<MakeResult>;
+  runBCPro(rootPath: string, request: BCProRequest): Promise<BCProResult>;
+  listBCProManifests(rootPath: string): Promise<string[]>;
+  chooseBCProManifest(rootPath: string): Promise<string | null>;
   deleteBinWin(rootPath: string): Promise<boolean>;
   onBCBuildOutput(listener: (output: BCBuildOutput) => void): () => void;
   reveal(targetPath: string): Promise<void>;

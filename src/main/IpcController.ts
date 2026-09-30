@@ -1,9 +1,10 @@
 import path from 'node:path';
 import { dialog, ipcMain, shell } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { BCBuildCommand, MakeTarget, SavePayload } from '../shared/contracts';
+import type { BCBuildCommand, BCProRequest, MakeTarget, SavePayload } from '../shared/contracts';
 import { AppStateStore } from './services/AppStateStore';
 import { BCBuildService } from './services/BCBuildService';
+import { BC_PRO_RELATIVE_DIRECTORY, BCProService } from './services/BCProService';
 import { BranchConfigService } from './services/BranchConfigService';
 import { MakeService } from './services/MakeService';
 import { WindowManager } from './WindowManager';
@@ -14,7 +15,8 @@ export class IpcController {
     private readonly branchService: BranchConfigService,
     private readonly stateStore: AppStateStore,
     private readonly bcBuildService: BCBuildService,
-    private readonly makeService: MakeService
+    private readonly makeService: MakeService,
+    private readonly bcProService: BCProService
   ) {}
 
   public register(): void {
@@ -99,6 +101,33 @@ export class IpcController {
           if (!event.sender.isDestroyed()) event.sender.send('bcbuild:output', output);
         })
       )
+    );
+
+    ipcMain.handle(
+      'bcpro:run',
+      async (event: IpcMainInvokeEvent, rootPath: string, request: BCProRequest) => (
+        this.bcProService.run(rootPath, request, (output) => {
+          if (!event.sender.isDestroyed()) event.sender.send('bcbuild:output', output);
+        })
+      )
+    );
+
+    ipcMain.handle(
+      'bcpro:manifests',
+      async (_event: IpcMainInvokeEvent, rootPath: string) => this.bcProService.listManifests(rootPath)
+    );
+
+    ipcMain.handle(
+      'bcpro:choose-manifest',
+      async (_event: IpcMainInvokeEvent, rootPath: string): Promise<string | null> => {
+        const result = await dialog.showOpenDialog(this.windows.get(), {
+          title: 'Choose BCPro manifest',
+          defaultPath: path.join(path.resolve(rootPath), BC_PRO_RELATIVE_DIRECTORY),
+          properties: ['openFile'],
+          filters: [{ name: 'BCPro manifest', extensions: ['yaml', 'yml'] }]
+        });
+        return result.canceled ? null : result.filePaths[0] ?? null;
+      }
     );
 
     ipcMain.handle(

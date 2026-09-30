@@ -2,6 +2,7 @@ import { app, BrowserWindow, nativeTheme } from 'electron';
 import { IpcController } from './IpcController';
 import { AppStateStore } from './services/AppStateStore';
 import { BCBuildService } from './services/BCBuildService';
+import { BCProService } from './services/BCProService';
 import { BranchConfigService } from './services/BranchConfigService';
 import { MakeService } from './services/MakeService';
 import { WindowManager } from './WindowManager';
@@ -12,7 +13,8 @@ const ipcController = new IpcController(
   new BranchConfigService(),
   new AppStateStore(),
   new BCBuildService(),
-  new MakeService()
+  new MakeService(),
+  new BCProService()
 );
 nativeTheme.themeSource = 'dark';
 ipcController.register();

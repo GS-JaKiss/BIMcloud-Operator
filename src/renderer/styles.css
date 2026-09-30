@@ -120,6 +120,16 @@ input::placeholder { color: #6f7f93; }
 }
 .bcbuild-controls select:hover, .bcbuild-controls select:focus { border-color: var(--blue); }
 .bcbuild-controls select:focus { box-shadow: 0 0 0 2px rgba(90,167,255,.18); }
+.bcbuild-controls select.compact { width: 90px; }
+.bcbuild-controls select:disabled { color: var(--muted); opacity: .65; cursor: default; }
+.button.icon-only { padding: 8px 10px; }
+.bcpro-flags { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+.bcbuild-controls .bcpro-flag {
+  display: inline-flex; align-items: center; gap: 4px; margin: 0;
+  color: var(--ink); font-size: 12px; font-weight: 500; cursor: pointer;
+}
+.bcpro-flag input { margin: 0; accent-color: var(--blue); cursor: pointer; }
+.bcpro-flag:has(input:disabled) { opacity: .4; cursor: default; }
 
 .bcbuild-console {
   position: relative; height: 190px; flex: 0 0 190px; min-height: 120px;

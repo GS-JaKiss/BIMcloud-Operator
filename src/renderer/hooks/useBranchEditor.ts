@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type {
   BCBuildCommand,
+  BCProRequest,
   BranchData,
   ConfigOption,
   ConfigValue,
@@ -26,6 +27,7 @@ export type BranchEditorState = {
   bcBuildOutput: string;
   bcBuildOutputVisible: boolean;
   bcBuildRunning: boolean;
+  bcProManifests: string[];
   loadingLabel: string | null;
   toast: ToastState | null;
   dirty: boolean;
@@ -36,6 +38,8 @@ export type BranchEditorState = {
   selectBranch(rootPath: string): Promise<void>;
   runBCBuild(command: BCBuildCommand): Promise<boolean>;
   runMake(target: MakeTarget): Promise<boolean>;
+  runBCPro(request: BCProRequest): Promise<boolean>;
+  chooseBCProManifest(): Promise<string | null>;
   buildPortal(): Promise<void>;
   refreshBranch(): Promise<void>;
   deleteBinWin(): Promise<void>;
@@ -67,9 +71,22 @@ export function useBranchEditor(): BranchEditorState {
   const [bcBuildOutput, setBCBuildOutput] = useState('');
   const [bcBuildOutputVisible, setBCBuildOutputVisible] = useState(false);
   const [bcBuildRunning, setBCBuildRunning] = useState(false);
+  const [bcProManifests, setBCProManifests] = useState<string[]>([]);
   const [loadingLabel, setLoadingLabel] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const dirty = JSON.stringify(overrides) !== JSON.stringify(baseline);
+
+  async function refreshBCProManifests(rootPath: string, keepChosen: boolean): Promise<void> {
+    let listed: string[] = [];
+    try {
+      listed = await window.branchConfig.listBCProManifests(rootPath);
+    } catch {
+      listed = [];
+    }
+    setBCProManifests((current) => (
+      keepChosen ? [...new Set([...listed, ...current])] : listed
+    ));
+  }
 
   async function loadBranch(rootPath: string): Promise<void> {
     setLoadingLabel('Reading branch');
@@ -81,6 +98,7 @@ export function useBranchEditor(): BranchEditorState {
       setActiveGroup('');
       setSearch('');
       setShowOverridesOnly(false);
+      await refreshBCProManifests(loadedBranch.rootPath, false);
       try {
         setDiscoveredBranches(await window.branchConfig.discover(loadedBranch.rootPath));
       } catch {
@@ -116,6 +134,7 @@ export function useBranchEditor(): BranchEditorState {
       const result = await window.branchConfig.runBCBuild(branch.rootPath, command);
       const outputLines = result.output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
       const finalLine = outputLines.at(-1);
+      await refreshBCProManifests(branch.rootPath, true);
       setToast({
         title: `BCBuild ${command} completed`,
         message: finalLine || 'The command completed successfully.',
@@ -144,6 +163,7 @@ export function useBranchEditor(): BranchEditorState {
     try {
       const result = await window.branchConfig.runMake(branch.rootPath, target);
       const outputLines = result.output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      await refreshBCProManifests(branch.rootPath, true);
       setToast({
         title: `Make ${target} completed`,
         message: outputLines.at(-1) || 'The command completed successfully.',
@@ -162,6 +182,43 @@ export function useBranchEditor(): BranchEditorState {
     } finally {
       setBCBuildRunning(false);
     }
+  }
+
+  async function runBCPro(request: BCProRequest): Promise<boolean> {
+    if (!branch || loadingLabel || bcBuildRunning) return false;
+    const manifest = request.command === 'clean' ? null : request.manifest;
+    const commandLine = ['bcpro.cmd', request.command, manifest, ...request.flags].filter(Boolean).join(' ');
+    setBCBuildOutput(`> ${commandLine}\n`);
+    setBCBuildOutputVisible(true);
+    setBCBuildRunning(true);
+    try {
+      const result = await window.branchConfig.runBCPro(branch.rootPath, request);
+      const outputLines = result.output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      setToast({
+        title: `BCPro ${request.command} completed`,
+        message: outputLines.at(-1) || 'The command completed successfully.',
+        error: false,
+        actionPath: null
+      });
+      return true;
+    } catch (error: unknown) {
+      setToast({
+        title: `BCPro ${request.command} failed`,
+        message: getErrorMessage(error),
+        error: true,
+        actionPath: null
+      });
+      return false;
+    } finally {
+      setBCBuildRunning(false);
+    }
+  }
+
+  async function chooseBCProManifest(): Promise<string | null> {
+    if (!branch) return null;
+    const manifest = await window.branchConfig.chooseBCProManifest(branch.rootPath);
+    if (manifest) setBCProManifests((current) => (current.includes(manifest) ? current : [...current, manifest]));
+    return manifest;
   }
 
   async function buildPortal(): Promise<void> {
@@ -342,6 +399,7 @@ export function useBranchEditor(): BranchEditorState {
     bcBuildOutput,
     bcBuildOutputVisible,
     bcBuildRunning,
+    bcProManifests,
     loadingLabel,
     toast,
     dirty,
@@ -352,6 +410,8 @@ export function useBranchEditor(): BranchEditorState {
     selectBranch,
     runBCBuild,
     runMake,
+    runBCPro,
+    chooseBCProManifest,
     buildPortal,
     refreshBranch,
     deleteBinWin,

@@ -85,6 +85,7 @@ export function App(): React.JSX.Element {
           <BranchBar
             branch={editor.branch}
             bcBuildRunning={editor.bcBuildRunning}
+            bcProManifests={editor.bcProManifests}
             outputAvailable={Boolean(editor.bcBuildOutput)}
             outputVisible={editor.bcBuildOutputVisible}
             busy={Boolean(editor.loadingLabel)}
@@ -92,6 +93,8 @@ export function App(): React.JSX.Element {
             onReveal={(path) => void editor.reveal(path)}
             onRunBCBuild={(command) => void editor.runBCBuild(command)}
             onRunMake={(target) => void editor.runMake(target)}
+            onRunBCPro={(request) => void editor.runBCPro(request)}
+            onChooseBCProManifest={editor.chooseBCProManifest}
             onToggleOutput={() => editor.setBCBuildOutputVisible(!editor.bcBuildOutputVisible)}
           />
         )}
