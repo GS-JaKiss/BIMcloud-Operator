@@ -55,7 +55,7 @@ export const BC_BUILD_COMMANDS = [
   'sbs'
 ] as const;
 export type BCBuildCommand = typeof BC_BUILD_COMMANDS[number];
-export const MAKE_TARGETS = ['ALL', 'TWPortalServer', 'TWServerTools', 'TWClientBase', 'Installer'] as const;
+export const MAKE_TARGETS = ['ALL', 'TWJS', 'TWClientBase', 'Installer'] as const;
 export type MakeTarget = typeof MAKE_TARGETS[number];
 export const BC_PRO_COMMANDS = ['up', 'start', 'stop', 'down', 'dup', 'reset', 'clean'] as const;
 export type BCProCommand = typeof BC_PRO_COMMANDS[number];

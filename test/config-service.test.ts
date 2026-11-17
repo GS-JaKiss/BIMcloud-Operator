@@ -309,11 +309,11 @@ test('runs MakeWin BUILD with only supported targets from the Control folder', a
     return 'Build completed';
   });
 
-  assert.deepEqual(await service.run(rootPath, 'TWPortalServer'), {
-    target: 'TWPortalServer',
+  assert.deepEqual(await service.run(rootPath, 'TWJS'), {
+    target: 'TWJS',
     output: 'Build completed'
   });
-  assert.deepEqual(calls, [{ scriptPath, target: 'TWPortalServer', workingDirectory: path.join(rootPath, 'Control') }]);
+  assert.deepEqual(calls, [{ scriptPath, target: 'TWJS', workingDirectory: path.join(rootPath, 'Control') }]);
   await assert.rejects(service.run(rootPath, 'Unknown' as never), /Unsupported Make target/);
 });
 
