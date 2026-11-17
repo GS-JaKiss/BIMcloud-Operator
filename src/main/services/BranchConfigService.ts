@@ -12,6 +12,7 @@ import { WebUiConfigMapper } from './WebUiConfigMapper';
 
 export const SOURCE_CONFIG_PATH = path.join(
   'Sources',
+  'TWJS',
   'TWPortalServer',
   'TeamworkPortalServer',
   'js',
@@ -21,6 +22,7 @@ export const SOURCE_CONFIG_PATH = path.join(
 
 export const DEVELOPMENT_CONFIG_PATH = path.join(
   'Sources',
+  'TWJS',
   'TWPortalServer',
   'TeamworkPortalServer',
   'js',
@@ -30,6 +32,7 @@ export const DEVELOPMENT_CONFIG_PATH = path.join(
 
 export const TIMER_CONFIG_PATH = path.join(
   'Sources',
+  'TWJS',
   'TWPortalServer',
   'TeamworkPortalServer',
   'js',

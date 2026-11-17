@@ -23,16 +23,16 @@ To create the Windows production installer and portable executable, run `npm.cmd
 
 Choose the development branch root, such as `E:\Dev\JaKiss-Matrix-BCMain`. The app expects:
 
-- Source options at `Sources\TWPortalServer\TeamworkPortalServer\js\config\config.json`
-- Optional development options at `Sources\TWPortalServer\TeamworkPortalServer\js\config\developmentConfig.json`
-- Optional timer options at `Sources\TWPortalServer\TeamworkPortalServer\js\config\timerConfig.json`
+- Source options at `Sources\TWJS\TWPortalServer\TeamworkPortalServer\js\config\config.json`
+- Optional development options at `Sources\TWJS\TWPortalServer\TeamworkPortalServer\js\config\developmentConfig.json`
+- Optional timer options at `Sources\TWJS\TWPortalServer\TeamworkPortalServer\js\config\timerConfig.json`
 - A `PortalServer.config.xml` file below `Bin.Win` after Portal Server has been built
 
 The XML target is selected automatically. Options from all three JSON files are combined, and top-level source config objects map to matching elements below `PortalServer`. For example, the `development` object maps to the lowercase `development` XML element. A checked option is written as an XML override; an unchecked option is omitted so the source default applies. Boolean values use switches, while number and string values use typed inputs.
 
 An unbuilt branch can be opened before `Bin.Win` or `PortalServer.config.xml` exists. The app shows a build-required screen where **Build Portal** invokes the BCBuild `build-portal` command and checks for the generated configuration again when it completes.
 
-For the selected branch, the branch toolbar can run any command exported by `Sources\TWServerTools\BCBuild\bin\bcbuild.cmd`:
+For the selected branch, the branch toolbar can run any command exported by `Sources\TWJS\BCBuild\bin\bcbuild.cmd`:
 
 - Build and clean: `build-portal`, `clean-portal`, `build-portal-server`, `clean-portal-server`, `build-portal-ui`, `clean-portal-ui`, `build-bimcloud-configurator`, `clean-bimcloud-configurator`, `build-provisioning-tool`, `clean-provisioning-tool`, `build-tools`, `clean-tools`, `build-bimcloud-logs-analyzer-tool`, and `clean-bimcloud-logs-analyzer-tool`.
 - Test: `run-tenduke-tests`, `run-portal-server-tests`, `run-portal-server-cluster-tests`, `run-gsid-tests`, `run-portal-server-ui-tests`, `run-portal-server-ui-ci-sanity-tests`, `run-portal-server-ui-npm-script`, `run-jenkins-unittest`, `run-jenkins-buildtest`, `run-provisioning-tool-tests`, `run-native-unit-tests`, `run-all-tests`, `run-nostromo`, `run-coverage`, and `run-portal-server-redis-tests`.

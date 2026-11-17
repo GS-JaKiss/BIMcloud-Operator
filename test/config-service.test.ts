@@ -199,7 +199,7 @@ test('runs only supported BCBuild commands from the selected branch', async (con
   assert.deepEqual(calls, [{
     scriptPath,
     command: 'start-portal',
-    workingDirectory: path.join(rootPath, 'Sources', 'TWServerTools', 'BCBuild')
+    workingDirectory: path.join(rootPath, 'Sources', 'TWJS', 'BCBuild')
   }]);
   assert.deepEqual(streamedOutput, ['Installing\n', 'Warning\n']);
   await assert.rejects(

@@ -11,6 +11,7 @@ async function runSmokeTest(): Promise<void> {
   const sourcePath = path.join(
     fixtureRoot,
     'Sources',
+    'TWJS',
     'TWPortalServer',
     'TeamworkPortalServer',
     'js',

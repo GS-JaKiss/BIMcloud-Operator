@@ -10,7 +10,7 @@ import {
 
 export const BC_BUILD_RELATIVE_PATH = path.join(
   'Sources',
-  'TWServerTools',
+  'TWJS',
   'BCBuild',
   'bin',
   'bcbuild.cmd'
